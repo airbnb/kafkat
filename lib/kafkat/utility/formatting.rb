@@ -2,7 +2,7 @@ module Kafkat
   module Formatting
     def justify(field, width=2)
       field = field.to_s
-      count = width - (field.length / 8)
+      count = [width - (field.length / 8), 0].max
       field + "\t" * count
     end
 

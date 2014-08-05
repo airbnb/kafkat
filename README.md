@@ -7,18 +7,23 @@ Simplified command-line administration for Kafka brokers.
 
 1. Install the gem.
 
-    gem install kafkat
+```
+gem install kafkat
+```
 
 1. Create a new configuration file to match your deployment.
 
+```
     {
       "kafka_path": "/srv/kafka/kafka_2.10-0.8.1.1",
       "log_path": "/mnt/kafka-logs",
       "zk_path": "zk0.foo.ca:2181,zk1.foo.ca:2181,zk2.foo.ca:2181/kafka"
     }
+```
 
 1. At any time, you can run `kafkat` to get a list of available commands and their arguments.
 
+```
     $ bin/kafkat
     kafkat 0.0.1: Simplified command-line administration for Kafka brokers
     usage: kafkat [command] [options]
@@ -36,6 +41,7 @@ Simplified command-line administration for Kafka brokers.
       resign-rewrite <broker id> --force                  Same as above but proceed if there are no available ISRs.
       shutdown <broker id>                                Gracefully remove leaderships from a broker (requires JMX).
       topics                                              Print all topics.
+```
 
 ## Important Note
 

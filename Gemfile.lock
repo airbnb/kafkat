@@ -1,0 +1,32 @@
+PATH
+  remote: .
+  specs:
+    kafkat (0.0.1)
+      colored (~> 1.2)
+      highline (~> 1.6.21)
+      retryable (~> 1.3.5)
+      trollop (~> 2.0)
+      zk (~> 1.9.4)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colored (1.2)
+    highline (1.6.21)
+    little-plugger (1.1.3)
+    logging (1.8.2)
+      little-plugger (>= 1.1.3)
+      multi_json (>= 1.8.4)
+    multi_json (1.10.1)
+    retryable (1.3.5)
+    trollop (2.0)
+    zk (1.9.4)
+      logging (~> 1.8.2)
+      zookeeper (~> 1.4.0)
+    zookeeper (1.4.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  kafkat!

@@ -1,0 +1,1 @@
+require 'kafkat/utility/formatting'

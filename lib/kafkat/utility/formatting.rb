@@ -32,8 +32,8 @@ module Kafkat
       print justify(partition.topic_name)
       print justify(partition.id)
       print justify(partition.leader || 'none')
-      print justify(partition.replicas.inspect, 3)
-      print justify(partition.isr.inspect, 3)
+      print justify(partition.replicas.inspect, 7)
+      print justify(partition.isr.inspect, 7)
       print "\n"
     end
 
@@ -41,8 +41,8 @@ module Kafkat
       print justify('Topic')
       print justify('Partition')
       print justify('Leader')
-      print justify('Replicas', 3)
-      print justify('ISRs', 3)
+      print justify('Replicas', 7)
+      print justify('ISRs', 7)
       print "\n"
     end
 

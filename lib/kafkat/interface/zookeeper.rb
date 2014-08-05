@@ -63,6 +63,7 @@ module Kafkat
           partitions << Partition.new(name, id, replicas, leader, isr)
         end
 
+        partitions.sort_by!(&:id)
         Topic.new(name, partitions)
       end
 

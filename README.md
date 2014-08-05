@@ -44,6 +44,7 @@ Here's a list of supported commands:
   resign-rewrite <broker id> --force                  Same as above but proceed if there are no available ISRs.
   shutdown <broker id>                                Gracefully remove leaderships from a broker (requires JMX).
   topics                                              Print all topics.
+  
 ```
 
 ## Important Note

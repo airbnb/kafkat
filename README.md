@@ -11,7 +11,7 @@ Simplified command-line administration for Kafka brokers.
 gem install kafkat
 ```
 
-1. Create a new configuration file to match your deployment.
+2. Create a new configuration file to match your deployment.
 
 ```
 {
@@ -21,7 +21,7 @@ gem install kafkat
 }
 ```
 
-1. At any time, you can run `kafkat` to get a list of available commands and their arguments.
+3. At any time, you can run `kafkat` to get a list of available commands and their arguments.
 
 ```
 $ bin/kafkat
@@ -45,4 +45,4 @@ Here's a list of supported commands:
 
 ## Important Note
 
-This gem needs read/write access to the Kafka log directory for some operations.
+The gem needs read/write access to the Kafka log directory for some operations (clean indexes).

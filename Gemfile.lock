@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kafkat (0.0.1)
+    kafkat (0.0.7)
       colored (~> 1.2)
       highline (~> 1.6.21)
       retryable (~> 1.3.5)

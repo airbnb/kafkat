@@ -32,6 +32,7 @@ Here's a list of supported commands:
 
   brokers                                             Print available brokers from Zookeeper.
   clean-indexes                                       Delete untruncated Kafka log indexes from the filesystem.
+  controller                                          Print the current controller.
   elect-leaders [topic]                               Begin election of the preferred leaders.
   partitions [topic]                                  Print partitions by topic.
   partitions [topic] --under-replicated               Print partitions by topic (only under-replicated).

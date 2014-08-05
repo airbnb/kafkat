@@ -3,6 +3,7 @@ require 'thread'
 module Kafkat
   module Interface
     class Zookeeper
+      class NotFoundError < StandardError; end
       class WriteConflictError < StandardError; end
 
       attr_reader :zk_path
@@ -35,6 +36,8 @@ module Kafkat
         json = JSON.parse(string)
         host, port = json['host'], json['port']
         Broker.new(id, host, port)
+      rescue ZK::Exceptions::NoNode
+        raise NotFoundError
       end
 
       def get_topics(names=nil)
@@ -80,9 +83,19 @@ module Kafkat
 
         partitions.sort_by!(&:id)
         Topic.new(name, partitions)
+      rescue ZK::Exceptions::NoNode
+        raise NotFoundError
       end
 
-      # Returns true if successful
+      def get_controller
+        string = zk.get(controller_path).first
+        controller_json = JSON.parse(string)
+        controller_id = controller_json['brokerid']
+        get_broker(controller_id)
+      rescue ZK::Exceptions::NoNode
+        raise NotFoundError
+      end
+
       def write_leader(partition, broker_id)
         path = topic_partition_state_path(partition.topic_name, partition.id)
         string, stat = zk.get(path)
@@ -124,6 +137,10 @@ module Kafkat
 
       def topic_partition_state_path(name, id)
         "/brokers/topics/#{name}/partitions/#{id}/state"
+      end
+
+      def controller_path
+        "/controller"
       end
     end
   end

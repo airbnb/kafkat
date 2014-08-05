@@ -24,7 +24,7 @@ gem install kafkat
 3. At any time, you can run `kafkat` to get a list of available commands and their arguments.
 
 ```
-$ bin/kafkat
+$ kafkat
 kafkat 0.0.1: Simplified command-line administration for Kafka brokers
 usage: kafkat [command] [options]
 

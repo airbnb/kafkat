@@ -1,5 +1,10 @@
 module Kafkat
   class Config
+    CONFIG_PATHS = [
+      '~/.kafkatcfg',
+      '/etc/kafkatcfg'
+    ]
+
     class NotFoundError < StandardError; end
     class ParseError < StandardError; end
 
@@ -8,10 +13,23 @@ module Kafkat
     attr_reader :zk_path
 
     def self.load!
-      path = File.expand_path('~/.kafkatcfg')
-      string = File.read(path)
+      string = nil
+      e = nil
+
+      CONFIG_PATHS.each do |rel_path|
+        begin
+          path = File.expand_path(rel_path)
+          string = File.read(path)
+          break
+        rescue => e
+        end
+      end
+
+      raise e if e && string.nil?
+
       json = JSON.parse(string)
       self.new(json)
+
     rescue Errno::ENOENT
       raise NotFoundError
     rescue JSON::JSONError

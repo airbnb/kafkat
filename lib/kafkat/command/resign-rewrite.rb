@@ -29,11 +29,6 @@ module Kafkat
         topics = zookeeper.get_topics
         force = opts[:force]
 
-        if !brokers.keys.include?(broker_id)
-          print "There is no broker with that ID."
-          exit 1
-        end
-
         ops = {}
         topics.each do |_, t|
           t.partitions.each do |p|

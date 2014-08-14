@@ -3,6 +3,13 @@ kafkat
 
 Simplified command-line administration for Kafka brokers.
 
+## Contact 
+**Let us know!** If you fork this, or if you use it, or if it helps in anyway, we'd love to hear from you! opensource@airbnb.com
+
+## License & Attributions
+This project is released under the Apache License Version 2.0 (APLv2).
+
+
 ## Usage
 
 * Install the gem.

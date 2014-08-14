@@ -8,9 +8,10 @@ Gem::Specification.new do |s|
   s.platform     = Gem::Platform::RUBY
   s.authors      = ["Nelson Gauthier"]
   s.email        = ['nelson@airbnb.com']
-  s.homepage     = 'https://git.airbnb.com/airbnb/kafkat'
+  s.homepage     = 'https://github.com/airbnb/kafkat'
   s.summary      = "Simplified command-line administration for Kafka brokers"
   s.description  = s.summary
+  s.license      = 'Apache-v2'
 
   s.files        = `git ls-files`.split($/)
   s.executables  = s.files.grep(%r{^bin/}) { |f| File.basename f }

@@ -1,2 +1,6 @@
 *.gem
 .bundle
+*.iws
+*.iml
+*.ipr
+

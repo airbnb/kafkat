@@ -80,7 +80,7 @@ module Kafkat
           print "\nBeginning.\n"
           result = admin.reassign!(assignments)
           print "Started.\n"
-        rescue Admin::ExecutionFailedError
+        rescue Interface::Admin::ExecutionFailedError
           print result
         end
       end

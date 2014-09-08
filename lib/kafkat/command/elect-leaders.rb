@@ -22,7 +22,7 @@ module Kafkat
           print "\nBeginning.\n"
           result = admin.elect_leaders!(partitions)
           print "Started.\n"
-        rescue Admin::ExecutionFailedError
+        rescue Interface::Admin::ExecutionFailedError
           print result
         end
       end

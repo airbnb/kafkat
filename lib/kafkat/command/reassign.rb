@@ -42,7 +42,7 @@ module Kafkat
           topic_replica_count = replica_count || t.partitions[0].replicas.size
 
           if topic_replica_count > broker_count
-            print "ERROR: Replication factor is larger than brokers.\n"
+            print "ERROR: Replication factor (#{topic_replica_count}) is larger than brokers (#{broker_count}).\n"
             exit 1
           end
 

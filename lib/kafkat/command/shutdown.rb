@@ -21,7 +21,7 @@ module Kafkat
           print "\nBeginning shutdown.\n"
           result = admin.shutdown!(broker_id)
           print "Started.\n"
-        rescue Admin::ExecutionFailedError
+        rescue Interface::Admin::ExecutionFailedError
           print result
         end
       end

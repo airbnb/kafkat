@@ -18,9 +18,9 @@ Gem::Specification.new do |s|
   s.test_files   = s.files.grep(%r{^(test|spec|features)/})
   s.require_path = 'lib'
 
-  s.add_runtime_dependency 'zk', '~> 1.9.4'
+  s.add_runtime_dependency 'zk', '~> 1.9', '>= 1.9.4'
   s.add_runtime_dependency 'trollop', '~> 2.0'
-  s.add_runtime_dependency 'highline', '~> 1.6.21'
-  s.add_runtime_dependency 'retryable', '~> 1.3.5'
+  s.add_runtime_dependency 'highline', '~> 1.6', '>= 1.6.21'
+  s.add_runtime_dependency 'retryable', '~> 1.3', '>= 1.3.5'
   s.add_runtime_dependency 'colored', '~> 1.2'
 end

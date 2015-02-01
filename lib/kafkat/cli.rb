@@ -44,8 +44,8 @@ module Kafkat
       Command.all.values.sort_by(&:command_name).each do |klass|
         klass.usages.each do |usage|
           format, description = usage[0], usage[1]
-          padding_length = 52 - format.length
-          padding = " " * padding_length
+          padding_length = 68 - format.length
+          padding = " " * padding_length unless padding_length < 0
           print "  #{format}#{padding}#{description}\n"
         end
       end

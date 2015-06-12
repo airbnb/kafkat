@@ -16,7 +16,9 @@
 # users commonly want.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
-
+if ENV['COVERAGE']
+    require 'simplecov'
+end
 require 'kafkat'
 require 'factory_girl'
 require 'rspec/collection_matchers'

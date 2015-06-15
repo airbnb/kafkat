@@ -3,7 +3,7 @@ module Kafkat
     class Drain < Base
       register_as 'drain'
 
-      usage 'drain <broker id> [topic] [--brokers <ids>]',
+      usage 'drain <broker id> [--topic <t>] [--brokers <ids>]',
             'Reassign partitions from a specific broker to destination brokers.'
 
       # For each partition (of speicified topic) on the source broker, the command is to
@@ -23,13 +23,14 @@ module Kafkat
           exit 1
         end
 
-        topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
-        topics = topic_name && zookeeper.get_topics([topic_name])
-        topics ||= zookeeper.get_topics
-
         opts = Trollop.options do
           opt :brokers, "destination broker IDs", type: :string
+          opt :topic,   "topic name to reassign", type: :string
         end
+
+        topic_name = opts[:topic]
+        topics = topic_name && zookeeper.get_topics([topic_name])
+        topics ||= zookeeper.get_topics
 
         destination_broker_ids = opts[:brokers] && opts[:brokers].split(',').map(&:to_i)
         destination_broker_ids ||= zookeeper.get_brokers.values.map(&:id)
@@ -49,19 +50,14 @@ module Kafkat
         assignments = []
 
         topics.each do |_, t|
-          num_partitions_on_broker = Hash.new{0}
-          t.partitions.each do |p|
-            p.replicas.each do |r|
-              num_partitions_on_broker[r] += 1
-            end
-          end
+          num_partitions_on_broker = build_num_partitions_on_broker_map(t)
 
           t.partitions.each do |p|
             if p.replicas.include? source_broker_id
               replicas = p.replicas - [source_broker_id]
               potential_broker_ids = destination_broker_ids - replicas
               if potential_broker_ids.empty?
-                print "ERROR: Not enough destination brokers to reassign replicas.\n"
+                print "ERROR: Not enough destination brokers to reassign topic \"#{t.name}\".\n"
                 exit 1
               end
 
@@ -77,6 +73,18 @@ module Kafkat
         end
 
         assignments
+      end
+
+      # Build a hash map from broker_id to number of partitions on it to facilitate
+      # finding the broker with lowest number of partitions to help balance brokers.
+      def build_num_partitions_on_broker_map(topic)
+        num_partitions_on_broker = Hash.new{0}
+        topic.partitions.each do |p|
+          p.replicas.each do |r|
+            num_partitions_on_broker[r] += 1
+          end
+        end
+        num_partitions_on_broker
       end
     end
   end

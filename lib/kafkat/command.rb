@@ -14,6 +14,7 @@ module Kafkat
 
     class Base
       include Formatting
+      include CommandIO
 
       attr_reader :config
 

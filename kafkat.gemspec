@@ -23,4 +23,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'highline', '~> 1.6', '>= 1.6.21'
   s.add_runtime_dependency 'retryable', '~> 1.3', '>= 1.3.5'
   s.add_runtime_dependency 'colored', '~> 1.2'
+
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'simplecov'
+  s.add_development_dependency 'rspec', '~> 3.2.0'
+  s.add_development_dependency 'rspec-collection_matchers', '~> 1.1.0'
+  s.add_development_dependency 'factory_girl', '~> 4.5.0'
 end

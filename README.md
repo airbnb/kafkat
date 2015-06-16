@@ -52,6 +52,7 @@ Here's a list of supported commands:
   set-replication-factor [topic] [--newrf <n>] [--brokers id[,id]]    Set the replication factor of
   shutdown <broker id>                                                Gracefully remove leaderships from a broker (requires JMX).
   topics                                                              Print all topics.
+  drain <broker id> [--topic <t>] [--brokers <ids>]                   Reassign partitions from a specific broker to other brokers.
   
 ```
 

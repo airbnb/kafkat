@@ -3,6 +3,14 @@ module Kafkat
     factory :topic, class:Topic do
       name "topic_name"
 
+      factory :topic_with_one_empty_broker do
+        partitions {[Partition.new(name, 0, [0], 0, 0),
+                     Partition.new(name, 1, [1], 1, 1),
+                     Partition.new(name, 2, [0], 0, 0),
+                     Partition.new(name, 3, [0], 0, 0),
+                     Partition.new(name, 4, [1], 1, 1)]}
+      end
+
       factory :topic_rep_factor_one do
         partitions {[Partition.new(name, 0, [0], 0, 0),
                      Partition.new(name, 1, [1], 1, 1),

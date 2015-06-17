@@ -39,6 +39,15 @@ module Kafkat
 
         topics.each do |_, t|
           if opts[:partitions]
+            # we need to convert the array of Partitions to an array of
+            # ids in order to perform set operations
+            part_ids = t.partitions.map {|partition| partition.id}
+            invalid_partitions = opts[:partitions] - part_ids
+            unless invalid_partitions.empty?
+              print "ERROR: partition(s) #{invalid_partitions.inspect} do not exist.\n"
+              exit 1
+            end
+
             # apply filter on partitions by selecting only those partitions that have
             # been targeted based on the command line options
             partitions = t.partitions.select { |partition| opts[:partitions].include? partition.id }
@@ -71,7 +80,7 @@ module Kafkat
             end
 
             replicas.reverse!
-            assignments << Assignment.new(t.name, p.id, replicas)
+            assignments << Assignment.new(p, replicas)
           end
         end
 

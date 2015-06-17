@@ -80,7 +80,7 @@ module Kafkat
             end
 
             replicas.reverse!
-            assignments << Assignment.new(p, replicas)
+            assignments << Assignment.new(t.name, p.id, replicas)
           end
         end
 

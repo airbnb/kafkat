@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'colored', '~> 1.2'
 
   s.add_development_dependency 'rake'
+  s.add_development_dependency 'pry'
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'rspec', '~> 3.2.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.1.0'

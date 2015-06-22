@@ -36,9 +36,9 @@ module Kafkat
         end
 
         if strategy == "smart"
-          assignment_strategy = SmartStrategy.new()
+          assignment_strategy = SmartStrategy.new
         elsif strategy == "load-balanced"
-          assignment_strategy = LoadBalancedStrategy.new()
+          assignment_strategy = LoadBalancedStrategy.new
         else
           print "ERROR: Unrecognized strategy \"#{strategy}\".\n"
           exit 1
@@ -76,7 +76,7 @@ module Kafkat
       def generate_topic_assignment(
         topic, topic_replica_count, destination_broker_ids, all_broker_ids, broker_count)
 
-        raise NotImplementedError.new()
+        raise NotImplementedError.new
       end
     end
 
@@ -121,32 +121,16 @@ module Kafkat
 
         assignment = []
 
-        partition_count = topic.partitions.size
-        num_partitions_on_broker = build_num_partitions_on_broker_map(topic, all_broker_ids)
-        partitions_quota_on_broker = generate_partitions_quota_on_broker(
-          partition_count, topic_replica_count, destination_broker_ids, num_partitions_on_broker)
+        brokers_quota = generate_brokers_quota(
+          topic, topic_replica_count, destination_broker_ids, all_broker_ids)
 
-        remove_replicas_with_overfilled_broker_and_partition(
-          topic,
-          topic_replica_count,
-          num_partitions_on_broker,
-          partitions_quota_on_broker,
-          destination_broker_ids)
+        remove_unused_brokers(topic, brokers_quota, destination_broker_ids)
 
         topic.partitions.each do |p|
-          available_brokers = find_available_brokers(
-            destination_broker_ids, p, num_partitions_on_broker, partitions_quota_on_broker)
-
-          remove_assignment_with_overfilled_broker(
-            p,
-            available_brokers,
-            topic_replica_count,
-            num_partitions_on_broker,
-            partitions_quota_on_broker)
-
-          fill_underfilled_partition(
-            p, topic_replica_count, available_brokers, num_partitions_on_broker)
-          trim_overfilled_partition(p, topic_replica_count, num_partitions_on_broker)
+          available_brokers = find_available_brokers(destination_broker_ids, p, brokers_quota)
+          remove_overfilled_brokers(p, available_brokers, topic_replica_count, brokers_quota)
+          fill_underfilled_partition(p, topic_replica_count, available_brokers, brokers_quota)
+          trim_overfilled_partition(p, topic_replica_count, brokers_quota)
 
           assignment << Assignment.new(topic.name, p.id, p.replicas)
         end
@@ -155,51 +139,37 @@ module Kafkat
       end
 
     private
-      # Assign quota to brokers.
-      # Quota is evenly distributed among detination brokers where as those destination brokers
-      # with more replicas initially might be assigned with one more if quota cannot be
-      # distrbuted completely evenly.
-      def generate_partitions_quota_on_broker(
-        partition_count,
-        topic_replica_count,
-        destination_broker_ids,
-        num_partitions_on_broker)
+      # Quota is the target number of partitions minus the current number of partitions on a broker.
+      def generate_brokers_quota(
+        topic, topic_replica_count, destination_broker_ids, all_broker_ids)
 
+        partition_count = topic.partitions.size
         total_partitions = partition_count * topic_replica_count
         min_replicas_per_broker = total_partitions / destination_broker_ids.size
         remaining_replicas_quota = total_partitions % destination_broker_ids.size
+        num_partitions_on_broker = build_num_partitions_on_broker_map(topic, all_broker_ids)
 
-        partitions_quota_on_broker = Hash.new(0)
-        destination_broker_ids.each do |id|
-          partitions_quota_on_broker[id] = min_replicas_per_broker
-        end
+        brokers_quota = Hash.new(0)
+        destination_broker_ids.each { |id| brokers_quota[id] = min_replicas_per_broker }
+        # give remaining partitions to brokers with more replicas initially
         num_partitions_on_broker.select { |id, _| destination_broker_ids.include? id }
           .sort_by { |id, num| -num }.first(remaining_replicas_quota).each do |id, _|
 
-          partitions_quota_on_broker[id] += 1
+          brokers_quota[id] += 1
         end
 
-        partitions_quota_on_broker
+        brokers_quota.each { |id, _| brokers_quota[id] -= num_partitions_on_broker[id] }
+        brokers_quota
       end
 
-      # Existing assignments where partitions with too many replicas ( due to decrese of
-      # replication factor) and brokers with too many replicas (due to decrease of replication
-      # factor or increase of number of brokers) are removed.
-      # Brokers not in destination brokers are also removed.
-      def remove_replicas_with_overfilled_broker_and_partition(
-        topic,
-        topic_replica_count,
-        num_partitions_on_broker,
-        partitions_quota_on_broker,
-        destination_broker_ids)
+      # Remove assignments where brokers are not in destination brokers.
+      def remove_unused_brokers(topic, brokers_quota, destination_broker_ids)
 
         topic.partitions.each do |p|
           p.replicas.delete_if do |broker|
-            if (p.replicas.size > topic_replica_count &&
-                num_partitions_on_broker[broker] > partitions_quota_on_broker[broker]) ||
-               !destination_broker_ids.include?(broker)
+            unless destination_broker_ids.include?(broker)
 
-              num_partitions_on_broker[broker] -= 1
+              brokers_quota[broker] += 1
               true
             end
           end
@@ -207,50 +177,43 @@ module Kafkat
       end
 
       # Find brokers not assigned with the partition and not meet quota
-      def find_available_brokers(
-        destination_broker_ids, partition, num_partitions_on_broker, partitions_quota_on_broker)
+      def find_available_brokers(destination_broker_ids, partition, brokers_quota)
 
         available_brokers = destination_broker_ids - partition.replicas
-        available_brokers.delete_if do |broker|
-          num_partitions_on_broker[broker] >= partitions_quota_on_broker[broker]
-        end
+        available_brokers.delete_if { |broker| brokers_quota[broker] <= 0 }
         available_brokers
       end
 
-      # Remove broker exceeding quota if enough available brokers exit.
+      # Remove broker exceeding quota if enough available brokers exist.
       # If not enough brokers available while existing broker exceeding quota, this means the broker
       # is overfilled with other partitions, and will meet quota in later iteration.
-      def remove_assignment_with_overfilled_broker(
-        partition,
-        available_brokers,
-        topic_replica_count,
-        num_partitions_on_broker,
-        partitions_quota_on_broker)
+      def remove_overfilled_brokers(
+        partition, available_brokers, topic_replica_count, brokers_quota)
 
         partition.replicas.delete_if do |broker|
           if partition.replicas.size + available_brokers.size > topic_replica_count &&
-            num_partitions_on_broker[broker] > partitions_quota_on_broker[broker]
+            brokers_quota[broker] < 0
 
-            num_partitions_on_broker[broker] -= 1
+            brokers_quota[broker] += 1
             true
           end
         end
       end
 
       def fill_underfilled_partition(
-        partition, topic_replica_count, available_brokers, num_partitions_on_broker)
+        partition, topic_replica_count, available_brokers, brokers_quota)
 
         while partition.replicas.size < topic_replica_count
           assigned_broker = available_brokers.shift
-          num_partitions_on_broker[assigned_broker] += 1
+          brokers_quota[assigned_broker] -= 1
           partition.replicas << assigned_broker
         end
       end
 
-      def trim_overfilled_partition(partition, topic_replica_count, num_partitions_on_broker)
+      def trim_overfilled_partition(partition, topic_replica_count, brokers_quota)
         while partition.replicas.size > topic_replica_count
           removed_broker = partition.replicas.shift
-          num_partitions_on_broker[removed_broker] -= 1
+          brokers_quota[removed_broker] += 1
         end
       end
     end

@@ -2,10 +2,10 @@ require 'spec_helper'
 
 module Kafkat
   RSpec.describe Command::Reassign do
-    let(:load_balanced_strategy) { Command::LoadBalancedStrategy.new() }
-    let(:smart_strategy) { Command::SmartStrategy.new() }
-    let(:skewed_topic) { FactoryGirl.build(:skewed_topic) }
+    let(:load_balanced_strategy) { Command::LoadBalancedStrategy.new }
+    let(:smart_strategy) { Command::SmartStrategy.new }
     let(:topic_not_distributed_evenly) { FactoryGirl.build(:topic_not_distributed_evenly) }
+    let(:topic_not_distributed_evenly2) { FactoryGirl.build(:topic_not_distributed_evenly2) }
     let(:topic_rep_factor_one) { FactoryGirl.build(:topic_rep_factor_one) }
     let(:topic_rep_factor_two) { FactoryGirl.build(:topic_rep_factor_two) }
 
@@ -63,6 +63,16 @@ module Kafkat
         expect(assignments[2].replicas).to eq([1])
         expect(assignments[3].replicas).to eq([1])
         expect(assignments[4].replicas).to eq([1])
+
+        assignments2 = smart_strategy.generate_topic_assignment(
+          topic_not_distributed_evenly2,
+          1,
+          [0, 1],
+          [0, 1, 2, 3],
+          4)
+        expect(assignments2).to have_exactly(2).Partitions
+        expect(assignments2[0].replicas).to eq([1])
+        expect(assignments2[1].replicas).to eq([0])
       end
 
       it 'should handle more replications and brokers properly' do
@@ -96,18 +106,6 @@ module Kafkat
         expect([[1], [2]]).to include(assignments[2].replicas)
         expect(assignments[3].replicas).to eq([1])
         expect(assignments[4].replicas).to eq([2])
-      end
-
-      it 'should handle skewed topic properly' do
-        assignments = smart_strategy.generate_topic_assignment(
-          skewed_topic,
-          1,
-          [0, 1],
-          [0, 1],
-          2)
-        expect(assignments).to have_exactly(2).Partitions
-        counts = count(assignments)
-        expect(counts).to eq({0 => 1, 1 =>1})
       end
     end
   end

@@ -36,17 +36,17 @@ module Kafkat
                      Partition.new(name, 4, [0, 1, 2], 1, 1)]}
       end
 
-      factory :skewed_topic do
-        partitions {[Partition.new(name, 0, [0, 1], 0, 0),
-                     Partition.new(name, 1, [], 1, 1)]}
-      end
-
       factory :topic_not_distributed_evenly do
         partitions {[Partition.new(name, 0, [0, 1], 0, 0),
                      Partition.new(name, 1, [0, 1], 1, 1),
                      Partition.new(name, 2, [0, 1], 1, 1),
                      Partition.new(name, 3, [0, 1], 0, 0),
                      Partition.new(name, 4, [0, 1], 1, 1)]}
+      end
+
+      factory :topic_not_distributed_evenly2 do
+        partitions {[Partition.new(name, 0, [0, 1], 0, 0),
+                     Partition.new(name, 1, [2, 3], 2, 2)]}
       end
     end
   end

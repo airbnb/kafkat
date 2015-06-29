@@ -4,9 +4,12 @@ module Kafkat
       register_as 'reassign'
 
       usage 'reassign [topic] [--brokers <ids>] [--strategy smart|load-balanced]',
-            'Begin reassignment of partitions.\n'\
-            'Default smart strategy minimizes data moved around, '\
-            'load-balanced strategy randomly assign partitions.'
+            <<eof
+Begin reassignment of partitions.
+Two assignment strategies are available:
+ - the Smart strategy (default) minimizes the number of partitions actually moved,
+ - the Load-Balanced strategy uniformly distributes the partitions over the specified brokers.
+eof
 
       def run
         topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')

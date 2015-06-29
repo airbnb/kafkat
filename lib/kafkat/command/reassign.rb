@@ -63,20 +63,20 @@ module Kafkat
           end
 
           assignments += assignment_strategy.generate_topic_assignment(
-            topic, topic_replica_count, destination_broker_ids, all_broker_ids, broker_count)
+            topic, topic_replica_count, destination_broker_ids)
         end
 
         prompt_and_execute_assignments(assignments)
       end
-    end
 
-    # This is how Kafka's AdminUtils determines these values.
-    def get_topic_replica_count(topic)
-      if topic.partitions.empty?
-        print "ERROR: Topic \"#{topic.name}\" has no partition.\n"
-        exit 1
+      # This is how Kafka's AdminUtils determines these values.
+      def get_topic_replica_count(topic)
+        if topic.partitions.empty?
+          print "ERROR: Topic \"#{topic.name}\" has no partition.\n"
+          exit 1
+        end
+        topic.partitions[0].replicas.size
       end
-      topic.partitions[0].replicas.size
     end
 
     class AssignmentStrategy

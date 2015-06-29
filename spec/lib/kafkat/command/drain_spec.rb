@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module Kafkat
-  RSpec.describe Command::Drain do
+  describe Command::Drain do
     let(:drain) { Command::Drain.new({}) }
     let(:broker_id) { 0 }
     let(:destination_broker_ids) { [1, 2] }

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module Kafkat
-  RSpec.describe Command::Reassign do
+  describe Command::Reassign do
     let(:load_balanced_strategy) { Command::LoadBalancedStrategy.new }
     let(:smart_strategy) { Command::SmartStrategy.new }
     let(:topic_not_distributed_evenly) { FactoryGirl.build(:topic_not_distributed_evenly) }

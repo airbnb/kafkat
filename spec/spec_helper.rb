@@ -21,6 +21,7 @@ if ENV['COVERAGE']
 end
 require 'kafkat'
 require 'factory_girl'
+require 'pry'
 require 'rspec/collection_matchers'
 
 require_relative '../spec/factories/topic'

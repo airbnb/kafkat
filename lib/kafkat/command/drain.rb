@@ -35,23 +35,24 @@ module Kafkat
         destination_broker_ids = opts[:brokers] && opts[:brokers].split(',').map(&:to_i)
         destination_broker_ids ||= zookeeper.get_brokers.values.map(&:id)
         destination_broker_ids.delete(source_broker_id)
-        all_broker_ids = zookeeper.get_brokers.values.map(&:id)
+        all_active_broker_ids = zookeeper.get_brokers.values.map(&:id)
 
-        unless (inactive_broker_ids = destination_broker_ids - all_broker_ids).empty?
+        unless (inactive_broker_ids = destination_broker_ids - all_active_broker_ids).empty?
           print "ERROR: Broker #{inactive_broker_ids} are not currently active.\n"
           exit 1
         end
 
-        assignments = generate_assignments(source_broker_id, topics,
-                                           destination_broker_ids, all_broker_ids)
+        assignments = generate_assignments(
+          source_broker_id, topics, destination_broker_ids, all_active_broker_ids)
         prompt_and_execute_assignments(assignments)
       end
 
-      def generate_assignments(source_broker_id, topics, destination_broker_ids, all_broker_ids)
-        assignments = []
+      def generate_assignments(
+        source_broker_id, topics, destination_broker_ids, all_active_broker_ids)
 
+        assignments = []
         topics.each do |_, t|
-          num_partitions_on_broker = build_num_partitions_on_broker_map(t, all_broker_ids)
+          num_partitions_on_broker = build_num_partitions_on_broker_map(t, all_active_broker_ids)
 
           t.partitions.each do |p|
             if p.replicas.include? source_broker_id
@@ -78,8 +79,9 @@ module Kafkat
 
       # Build a hash map from broker_id to number of partitions on it to facilitate
       # finding the broker with lowest number of partitions to help balance brokers.
-      def build_num_partitions_on_broker_map(topic, all_broker_ids)
-        num_partitions_on_broker = Hash[all_broker_ids.collect { |id| [id, 0] }]
+      def build_num_partitions_on_broker_map(topic, all_active_broker_ids)
+        num_partitions_on_broker = Hash.new(0)
+        all_active_broker_ids.each { |id| num_partitions_on_broker[id] = 0 }
         topic.partitions.each do |p|
           p.replicas.each do |r|
             num_partitions_on_broker[r] += 1

@@ -37,9 +37,9 @@ eof
 
         destination_broker_ids ||= zookeeper.get_brokers.values.map(&:id)
 
-        all_broker_ids = all_brokers.values.map(&:id)
+        all_active_broker_ids = all_brokers.values.map(&:id)
         destination_broker_ids.each do |id|
-          if !all_broker_ids.include? id
+          if !all_active_broker_ids.include? id
             print "ERROR: Broker #{id} is not currently active.\n"
             exit 1
           end

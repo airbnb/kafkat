@@ -5,7 +5,7 @@ module Kafkat
     let(:drain) { Command::Drain.new({}) }
     let(:broker_id) { 0 }
     let(:destination_broker_ids) { [1, 2] }
-    let(:all_broker_ids) { [0, 1, 2] }
+    let(:all_active_broker_ids) { [1, 2] }
 
     context 'three nodes with replication factor 1' do
       let(:topic_rep_factor_one) { FactoryGirl.build(:topic_rep_factor_one) }
@@ -14,7 +14,7 @@ module Kafkat
         assignments = drain.generate_assignments(broker_id,
                                                  {"topic_name" => topic_rep_factor_one},
                                                  destination_broker_ids,
-                                                 all_broker_ids)
+                                                 all_active_broker_ids)
         expect(assignments).to have_exactly(2).Partition
         expect(assignments[0].replicas).to eq([2])
         expect(assignments[1].replicas).to eq([1])
@@ -27,7 +27,7 @@ module Kafkat
         assignments = drain.generate_assignments(broker_id,
                                                  {"topic_name" => topic_rep_factor_two},
                                                  destination_broker_ids,
-                                                 all_broker_ids)
+                                                 all_active_broker_ids)
         expect(assignments).to have_exactly(4).Partition
         expect(assignments[0].replicas).to eq([1, 2])
         expect(assignments[1].replicas).to eq([2, 1])
@@ -44,7 +44,7 @@ module Kafkat
           drain.generate_assignments(broker_id,
                                      {"topic_name" => topic_rep_factor_three},
                                      destination_broker_ids,
-                                     all_broker_ids)
+                                     all_active_broker_ids)
         end.to raise_error(SystemExit)
       end
     end
@@ -56,7 +56,7 @@ module Kafkat
           drain.generate_assignments(broker_id,
                                      {"topic_name" => topic_with_one_empty_broker},
                                      destination_broker_ids,
-                                     all_broker_ids)
+                                     all_active_broker_ids)
         end.not_to raise_error
       end
     end

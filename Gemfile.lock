@@ -67,6 +67,3 @@ DEPENDENCIES
   rspec (~> 3.2.0)
   rspec-collection_matchers (~> 1.1.0)
   simplecov
-
-BUNDLED WITH
-   1.10.6

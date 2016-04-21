@@ -3,5 +3,5 @@
 *.iws
 *.iml
 *.ipr
-
+Gemfile.lock
 reports

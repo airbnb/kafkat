@@ -6,7 +6,7 @@ module Kafkat
       usage 'drain <broker id> [--topic <t>] [--brokers <ids>]',
             'Reassign partitions from a specific broker to destination brokers.'
 
-      # For each partition (of speicified topic) on the source broker, the command is to
+      # For each partition (of specified topic) on the source broker, the command is to
       # assign the partition to one of the destination brokers that does not already have
       # this partition, along with existing brokers to achieve minimal movement of data.
       # To help distribute data evenly, if there are more than one destination brokers
@@ -57,6 +57,7 @@ module Kafkat
           t.partitions.each do |p|
             if p.replicas.include? source_broker
               replicas = p.replicas - [source_broker]
+              source_broker_is_leader = p.replicas.first == source_broker
               potential_broker_ids = destination_brokers - replicas
               if potential_broker_ids.empty?
                 print "ERROR: Not enough destination brokers to reassign topic \"#{t.name}\".\n"
@@ -66,7 +67,11 @@ module Kafkat
               num_partitions_on_potential_broker =
                 partitions_by_broker.select { |id, _| potential_broker_ids.include? id }
               assigned_broker_id = num_partitions_on_potential_broker.min_by{ |id, num| num }[0]
-              replicas << assigned_broker_id
+              if source_broker_is_leader
+                replicas.unshift(assigned_broker_id)
+              else
+                replicas << assigned_broker_id
+              end
               partitions_by_broker[assigned_broker_id] += 1
 
               assignments << Assignment.new(t.name, p.id, replicas)

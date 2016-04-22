@@ -3,7 +3,7 @@ module Kafkat
     class Reassign < Base
       register_as 'reassign'
 
-      usage 'reassign [topic] [--brokers <ids>] [--replicas <n>]',
+      usage 'reassign [topic] [--brokers <ids>] [--partitions <ids>] [--replicas <n>]',
             'Begin reassignment of partitions.'
 
       def run
@@ -15,6 +15,7 @@ module Kafkat
 
         opts = Trollop.options do
           opt :brokers, "replica set (broker IDs)", type: :string
+          opt :partitions, "targeted partitions", type: :ints
           opt :replicas, "number of replicas (count)", type: :integer
         end
 
@@ -37,9 +38,26 @@ module Kafkat
         broker_count = broker_ids.size
 
         topics.each do |_, t|
+          if opts[:partitions]
+            # we need to convert the array of Partitions to an array of
+            # ids in order to perform set operations
+            part_ids = t.partitions.map {|partition| partition.id}
+            invalid_partitions = opts[:partitions] - part_ids
+            unless invalid_partitions.empty?
+              print "ERROR: partition(s) #{invalid_partitions.inspect} do not exist.\n"
+              exit 1
+            end
+
+            # apply filter on partitions by selecting only those partitions that have
+            # been targeted based on the command line options
+            partitions = t.partitions.select { |partition| opts[:partitions].include? partition.id }
+          else
+            partitions = t.partitions
+          end
+
           # This is how Kafka's AdminUtils determines these values.
-          partition_count = t.partitions.size
-          topic_replica_count = replica_count || t.partitions[0].replicas.size
+          partition_count = partitions.size
+          topic_replica_count = replica_count || partitions[0].replicas.size
 
           if topic_replica_count > broker_count
             print "ERROR: Replication factor (#{topic_replica_count}) is larger than brokers (#{broker_count}).\n"
@@ -49,7 +67,7 @@ module Kafkat
           start_index = Random.rand(broker_count)
           replica_shift = Random.rand(broker_count)
 
-          t.partitions.each do |p|
+          partitions.each do |p|
             replica_shift += 1 if p.id > 0 && p.id % broker_count == 0
             first_replica_index = (p.id + start_index) % broker_count
 

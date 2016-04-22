@@ -48,7 +48,8 @@ Here's a list of supported commands:
   partitions [topic]                                                  Print partitions by topic.
   partitions [topic] --under-replicated                               Print partitions by topic (only under-replicated).
   partitions [topic] --unavailable                                    Print partitions by topic (only unavailable).
-  reassign [topic] [--brokers <ids>] [--replicas <n>]                 Begin reassignment of partitions.
+  reassign [topic] [--brokers <ids>] [--partitions <ids>]             Begin reassignment of partitions.
+           [--replicas <n>]
   resign-rewrite <broker id>                                          Forcibly rewrite leaderships to exclude a broker.
   resign-rewrite <broker id> --force                                  Same as above but proceed if there are no available ISRs.
   set-replication-factor [topic] [--newrf <n>] [--brokers id[,id]]    Set the replication factor of

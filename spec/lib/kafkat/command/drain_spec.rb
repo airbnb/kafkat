@@ -13,7 +13,7 @@ module Kafkat
         assignments = drain.generate_assignments(broker_id,
                                                  {"topic_name" => topic_rep_factor_one},
                                                  destination_broker_ids)
-        expect(assignments).to have_exactly(2).Partition
+        expect(assignments).to have_exactly(2).items
         expect(assignments[0].replicas).to eq([2])
         expect(assignments[1].replicas).to eq([1])
       end
@@ -25,11 +25,11 @@ module Kafkat
         assignments = drain.generate_assignments(broker_id,
                                                  {"topic_name" => topic_rep_factor_two},
                                                  destination_broker_ids)
-        expect(assignments).to have_exactly(4).Partition
-        expect(assignments[0].replicas).to eq([1, 2])
-        expect(assignments[1].replicas).to eq([2, 1])
-        expect(assignments[2].replicas).to eq([1, 2])
-        expect(assignments[3].replicas).to eq([2, 1])
+        expect(assignments).to have_exactly(4).items
+        expect(assignments[0].replicas).to eq([2, 1])
+        expect(assignments[1].replicas).to eq([1, 2])
+        expect(assignments[2].replicas).to eq([2, 1])
+        expect(assignments[3].replicas).to eq([1, 2])
       end
     end
 

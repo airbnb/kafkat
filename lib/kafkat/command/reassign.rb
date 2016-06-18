@@ -10,7 +10,12 @@ module Kafkat
         topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
 
         all_brokers = zookeeper.get_brokers
-        topics = topic_name && zookeeper.get_topics([topic_name])
+
+        topics = nil
+        if topic_name
+           topics_list = topic_name.split(',')
+           topics = zookeeper.get_topics(topics_list)
+        end
         topics ||= zookeeper.get_topics
 
         opts = Trollop.options do

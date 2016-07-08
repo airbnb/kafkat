@@ -40,9 +40,41 @@ module Kafkat
         raise NotFoundError
       end
 
+      def get_configs(config_names=nil)
+        configs = {}
+        config_names ||= get_config_names
+        topic_names = get_topic_names
+        config_names = config_names.keep_if { |k, v| topic_names.include? k }
+
+        threads = config_names.map do |config|
+          Thread.new do
+            begin
+              configs[config] = get_config(config)
+            rescue
+            end
+          end
+        end
+        threads.map(&:join)
+
+        configs
+      end
+
+      def get_config(id)
+        path = config_path(id)
+        string = zk.get(path).first
+        json = JSON.parse(string)
+        json
+      rescue ZK::Exceptions::NoNode
+        raise NotFoundError
+      end
+
+      def get_config_names
+        zk.children(configs_path)
+      end
+
       def get_topics(names=nil)
         topics = {}
-        names ||= zk.children(topics_path)
+        names ||= get_topic_names
 
         threads = names.map do |name|
           Thread.new do
@@ -87,6 +119,10 @@ module Kafkat
         raise NotFoundError
       end
 
+      def get_topic_names
+        zk.children(topics_path)
+      end
+
       def get_controller
         string = zk.get(controller_path).first
         controller_json = JSON.parse(string)
@@ -121,6 +157,14 @@ module Kafkat
 
       def broker_path(id)
         "/brokers/ids/#{id}"
+      end
+
+      def configs_path
+        '/config/topics'
+      end
+
+      def config_path(id)
+        "/config/topics/#{id}"
       end
 
       def topics_path

@@ -40,6 +40,31 @@ module Kafkat
         raise NotFoundError
       end
 
+      def get_configs(ids=nil)
+        configs = {}
+        ids ||= zk.children(configs_path)
+        threads = ids.map do |id|
+          Thread.new do
+            begin
+              configs[id] = get_config(id)
+            rescue
+            end
+          end
+        end
+        threads.map(&:join)
+
+        configs
+      end
+
+      def get_config(id)
+        path = config_path(id)
+        string = zk.get(path).first
+        json = JSON.parse(string)
+        json
+      rescue ZK::Exceptions::NoNode
+        raise NotFoundError
+      end
+
       def get_topics(names=nil)
         topics = {}
         names ||= zk.children(topics_path)
@@ -121,6 +146,14 @@ module Kafkat
 
       def broker_path(id)
         "/brokers/ids/#{id}"
+      end
+
+      def configs_path
+        '/config/topics'
+      end
+
+      def config_path(id)
+        "/config/topics/#{id}"
       end
 
       def topics_path

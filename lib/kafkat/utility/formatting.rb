@@ -18,6 +18,18 @@ module Kafkat
       print "\n"
     end
 
+    def print_config(topic_name, config)
+      print justify(topic_name)
+      print justify(config)
+      print "\n"
+    end
+
+    def print_config_header
+      print justify('Topic')
+      print justify('Config')
+      print "\n"
+    end
+
     def print_topic(topic)
       print justify(topic.name)
       print "\n"

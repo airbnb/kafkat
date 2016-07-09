@@ -21,7 +21,9 @@ module Kafkat
           Thread.new do
             begin
               brokers[id] = get_broker(id)
-            rescue
+            rescue ThreadError => e
+              print_thread_warning
+              raise e
             end
           end
         end
@@ -50,7 +52,9 @@ module Kafkat
           Thread.new do
             begin
               configs[config] = get_config(config)
-            rescue
+            rescue ThreadError => e
+              print_thread_warning
+              raise e
             end
           end
         end
@@ -80,7 +84,9 @@ module Kafkat
           Thread.new do
             begin
               topics[name] = get_topic(name)
-            rescue => e
+            rescue ThreadError => e
+              print_thread_warning
+              raise e
             end
           end
         end
@@ -100,15 +106,20 @@ module Kafkat
         threads = zk.children(path2).map do |id|
           id = id.to_i
           Thread.new do
-            path3 = topic_partition_state_path(name, id)
-            partition_string = zk.get(path3).first
-            partition_json = JSON.parse(partition_string)
+            begin
+              path3 = topic_partition_state_path(name, id)
+              partition_string = zk.get(path3).first
+              partition_json = JSON.parse(partition_string)
 
-            replicas = topic_json['partitions'][id.to_s]
-            leader = partition_json['leader']
-            isr = partition_json['isr']
+              replicas = topic_json['partitions'][id.to_s]
+              leader = partition_json['leader']
+              isr = partition_json['isr']
 
-            partitions << Partition.new(name, id, replicas, leader, isr)
+              partitions << Partition.new(name, id, replicas, leader, isr)
+            rescue ThreadError => e
+              print_thread_warning
+              raise e
+            end
           end
         end
         threads.map(&:join)
@@ -185,6 +196,10 @@ module Kafkat
 
       def controller_path
         "/controller"
+      end
+
+      def print_thread_warning
+        $stderr.puts "The allowed number of threads might have been exceeded, current number of threads is #{Thread.list.length}."
       end
     end
   end

@@ -5,7 +5,7 @@ kafkat
 
 Simplified command-line administration for Kafka brokers.
 
-## Contact 
+## Contact
 **Let us know!** If you fork this, or if you use it, or if it helps in anyway, we'd love to hear from you! opensource@airbnb.com
 
 ## License & Attributions
@@ -44,6 +44,9 @@ Here's a list of supported commands:
   brokers                                                             Print available brokers from Zookeeper.
   clean-indexes                                                       Delete untruncated Kafka log indexes from the filesystem.
   controller                                                          Print the current controller.
+  connectors [connector-name]                                         View configured connectors
+  connectors <connector-name> --configure [--config] [--config-file]  Configure connector with specified id
+  connectors <connector-name> --delete                                Delete connector with specified id
   elect-leaders [topic]                                               Begin election of the preferred leaders.
   partitions [topic]                                                  Print partitions by topic.
   partitions [topic] --under-replicated                               Print partitions by topic (only under-replicated).
@@ -55,7 +58,7 @@ Here's a list of supported commands:
   shutdown <broker id>                                                Gracefully remove leaderships from a broker (requires JMX).
   topics                                                              Print all topics.
   drain <broker id> [--topic <t>] [--brokers <ids>]                   Reassign partitions from a specific broker to other brokers.
-  
+
 ```
 
 ## Important Note

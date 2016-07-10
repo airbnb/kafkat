@@ -11,6 +11,7 @@ module Kafkat
     attr_reader :kafka_path
     attr_reader :log_path
     attr_reader :zk_path
+    attr_reader :connect_api_host
 
     def self.load!
       string = nil
@@ -40,6 +41,7 @@ module Kafkat
       @kafka_path = json['kafka_path']
       @log_path = json['log_path']
       @zk_path = json['zk_path']
+      @connect_api_host = json['connect_api_host']
     end
   end
 end

@@ -60,6 +60,12 @@ module Kafkat
           Interface::KafkaLogs.new(config)
         end
       end
+
+      def connect
+        @connect ||= begin
+          Interface::Connect.new(config)
+        end
+      end
     end
   end
 end

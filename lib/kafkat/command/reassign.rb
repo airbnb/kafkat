@@ -3,17 +3,17 @@ module Kafkat
     class Reassign < Base
       register_as 'reassign'
 
-      usage 'reassign [topic] [--brokers <ids>] [--replicas <n>]',
+      usage 'reassign [topics] [--brokers <ids>] [--replicas <n>]',
             'Begin reassignment of partitions.'
 
       def run
-        topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
+        topic_names = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
 
         all_brokers = zookeeper.get_brokers
 
         topics = nil
-        if topic_name
-           topics_list = topic_name.split(',')
+        if topic_names
+           topics_list = topic_names.split(',')
            topics = zookeeper.get_topics(topics_list)
         end
         topics ||= zookeeper.get_topics

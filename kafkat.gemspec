@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'highline', '~> 1.6', '>= 1.6.21'
   s.add_runtime_dependency 'retryable', '~> 1.3', '>= 1.3.5'
   s.add_runtime_dependency 'colored', '~> 1.2'
+  s.add_runtime_dependency 'json', '~> 1.8'
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'simplecov'

@@ -25,8 +25,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'colored', '~> 1.2'
   s.add_runtime_dependency 'json', '~> 1.8'
 
+  s.add_development_dependency "activesupport", ">= 2", "< 5"
   s.add_development_dependency 'rake'
-  s.add_development_dependency 'simplecov'
+  s.add_development_dependency 'simplecov', '~> 0.11.0'
   s.add_development_dependency 'rspec', '~> 3.2.0'
   s.add_development_dependency 'rspec-collection_matchers', '~> 1.1.0'
   s.add_development_dependency 'factory_girl', '~> 4.5.0'

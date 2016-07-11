@@ -11,6 +11,11 @@ Simplified command-line administration for Kafka brokers.
 ## License & Attributions
 This project is released under the Apache License Version 2.0 (APLv2).
 
+## How to release
+
+- update the version number in `lib/kafkat/version.rbi`
+- execute `bundle exec rake release`
+
 
 ## Usage
 
@@ -61,3 +66,5 @@ Here's a list of supported commands:
 ## Important Note
 
 The gem needs read/write access to the Kafka log directory for some operations (clean indexes).
+
+

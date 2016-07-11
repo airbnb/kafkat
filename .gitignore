@@ -5,3 +5,4 @@
 *.ipr
 Gemfile.lock
 reports
+.rakeTasks

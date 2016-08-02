@@ -13,7 +13,7 @@ This project is released under the Apache License Version 2.0 (APLv2).
 
 ## How to release
 
-- update the version number in `lib/kafkat/version.rbi`
+- update the version number in `lib/kafkat/version.rb`
 - execute `bundle exec rake release`
 
 

@@ -12,6 +12,10 @@ module Kafkat
         @zk_path = config.zk_path
       end
 
+      def get_broker_ids
+        zk.children(brokers_path)
+      end
+
       def get_brokers(ids=nil)
         brokers = {}
         ids ||= zk.children(brokers_path)

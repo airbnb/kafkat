@@ -1,6 +1,7 @@
 module Kafkat
   module Command
     class Drain < Base
+
       register_as 'drain'
 
       usage 'drain <broker id> [--topic <t>] [--brokers <ids>]',

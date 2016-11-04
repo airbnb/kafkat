@@ -7,8 +7,9 @@ module Kafkat
             'Print all topics.'
 
       def run
-        ts = zookeeper.get_topics
-        ts.each { |name, t| print_topic(t) }
+        topic_names = zookeeper.get_topic_names
+
+        topic_names.each { |name| print_topic_name(name) }
       end
     end
   end

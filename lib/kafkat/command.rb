@@ -15,6 +15,7 @@ module Kafkat
     class Base
       include Formatting
       include CommandIO
+      include Kafkat::Logging
 
       attr_reader :config
 

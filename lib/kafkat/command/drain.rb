@@ -46,6 +46,9 @@ module Kafkat
 
         assignments =
           generate_assignments(source_broker, topics, destination_brokers)
+
+        print "Num of topics got from zookeeper: #{topics.length}\n"
+        print "Num of partitions in the assignment: #{assignments.size}\n"
         prompt_and_execute_assignments(assignments)
       end
 
@@ -57,6 +60,7 @@ module Kafkat
 
           t.partitions.each do |p|
             if p.replicas.include? source_broker
+              replicas_size = p.replicas.length
               replicas = p.replicas - [source_broker]
               source_broker_is_leader = p.replicas.first == source_broker
               potential_broker_ids = destination_brokers - replicas
@@ -74,6 +78,11 @@ module Kafkat
                 replicas << assigned_broker_id
               end
               partitions_by_broker[assigned_broker_id] += 1
+
+              if replicas.length != replicas_size
+                STDERR.print "ERROR: Number of replicas changes after reassignment topic: #{t.name}, partition: #{p.id} \n"
+                exit 1
+              end
 
               assignments << Assignment.new(t.name, p.id, replicas)
             end

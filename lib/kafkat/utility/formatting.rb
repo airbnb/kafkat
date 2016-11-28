@@ -23,6 +23,11 @@ module Kafkat
       print "\n"
     end
 
+    def print_topic_name(topic_name)
+      print justify(topic_name)
+      print "\n"
+    end
+
     def print_topic_header
       print justify('Topic')
       print "\n"

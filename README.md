@@ -16,14 +16,22 @@ This project is released under the Apache License Version 2.0 (APLv2).
 - update the version number in `lib/kafkat/version.rb`
 - execute `bundle exec rake release`
 
+## Installation
 
-## Usage
+* Make sure Ruby is installed and that you can build native extensions.
+
+For instance on Ubuntu 16.04:
+```
+sudo apt-get install ruby2.3 ruby2.3-dev build-essential
+```
 
 * Install the gem.
 
 ```
 gem install kafkat
 ```
+
+## Usage
 
 * Create a new configuration file to match your deployment.
 

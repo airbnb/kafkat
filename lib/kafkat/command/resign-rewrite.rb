@@ -16,7 +16,7 @@ module Kafkat
           exit 1
         end
 
-        opts = Trollop.options do
+        opts = Optimist.options do
           opt :force, "force"
         end
 

@@ -18,7 +18,7 @@ module Kafkat
         end
         topics ||= zookeeper.get_topics
 
-        opts = Trollop.options do
+        opts = Optimist.options do
           opt :brokers, "replica set (broker IDs)", type: :string
           opt :replicas, "number of replicas (count)", type: :integer
         end

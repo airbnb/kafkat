@@ -7,7 +7,7 @@ module Kafkat
             'Check if all partitions in a topic have same number of replicas.'
 
       def run
-        opts = Trollop.options do
+        opts = Optimist.options do
           opt :topics, "topic names", type: :string
           opt :broker, "broker ID", type: :string
           opt :print_details, "show replica size of mismatched partitions", :default => false

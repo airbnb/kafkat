@@ -29,7 +29,7 @@ module Kafkat
         topics = topic_name && zookeeper.get_topics([topic_name])
         topics ||= zookeeper.get_topics
 
-        opts = Trollop.options do
+        opts = Optimist.options do
           opt :brokers, "the comma-separated list of broker the new partitions must be assigned to", type: :string
           opt :newrf, "the new replication factor", type: :integer, required: true
         end

@@ -14,7 +14,7 @@ module Kafkat
         topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
         topic_names = topic_name && [topic_name]
 
-        @options = Trollop.options do
+        @options = Optimist.options do
           opt :under_replicated, "only under-replicated"
           opt :unavailable, "only unavailable"
         end

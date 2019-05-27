@@ -24,7 +24,7 @@ module Kafkat
           exit 1
         end
 
-        opts = Trollop.options do
+        opts = Optimist.options do
           opt :brokers, "destination broker IDs", type: :string
           opt :topic,   "topic name to reassign", type: :string
         end

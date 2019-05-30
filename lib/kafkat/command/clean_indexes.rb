@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class CleanIndexes < Base
@@ -8,16 +9,16 @@ module Kafkat
 
       def run
         print "This operation will remove any untruncated index files.\n"
-        return unless ask("Proceed (y/n)?")
+        return unless ask('Proceed (y/n)?')
 
         begin
           print "\nStarted.\n"
           count = kafka_logs.clean_indexes!
           print "\nDone (#{count} index file(s) removed).\n"
-        rescue Interface::KafkaLogs::NoLogsError => e
+        rescue Interface::KafkaLogs::NoLogsError
           print "ERROR: Kakfa log directory doesn't exist.\n"
           exit 1
-        rescue Interface::KafkaLogs::KafkaRunningError => e
+        rescue Interface::KafkaLogs::KafkaRunningError
           print "ERROR: Kafka is still running.\n"
           exit 1
         rescue => e

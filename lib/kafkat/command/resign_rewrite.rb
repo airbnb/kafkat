@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class ResignForce < Base
@@ -12,21 +13,22 @@ module Kafkat
       def run
         broker_id = ARGV[0] && ARGV.shift.to_i
         if broker_id.nil?
-          puts "You must specify a broker ID."
+          puts 'You must specify a broker ID.'
           exit 1
         end
 
         opts = Optimist.options do
-          opt :force, "force"
+          opt :force, 'force'
         end
 
         print "This operation rewrites leaderships in ZK to exclude broker '#{broker_id}'.\n"
         print "WARNING: This is a last resort. Try the 'shutdown' command first!\n\n".red
 
-        return unless agree("Proceed (y/n)?")
+        return unless agree('Proceed (y/n)?')
 
-        brokers = zookeeper.get_brokers
-        topics = zookeeper.get_topics
+        # Unused assignment.  Commenting for now, removing later.
+        # brokers = zookeeper.brokers
+        topics = zookeeper.topics
         force = opts[:force]
 
         ops = {}
@@ -64,7 +66,7 @@ module Kafkat
               zookeeper.write_leader(p, lid)
             end
           end
-        rescue Interface::Zookeeper::WriteConflictError => e
+        rescue Interface::Zookeeper::WriteConflictError
           print "Failed to update leaderships in ZK. Try re-running.\n\n"
           exit 1
         end

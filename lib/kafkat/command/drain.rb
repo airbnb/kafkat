@@ -1,7 +1,7 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class Drain < Base
-
       register_as 'drain'
 
       usage 'drain <broker id> [--topic <t>] [--brokers <ids>]',
@@ -20,24 +20,24 @@ module Kafkat
       def run
         source_broker = ARGV[0] && ARGV.shift.to_i
         if source_broker.nil?
-          puts "You must specify a broker ID."
+          puts 'You must specify a broker ID.'
           exit 1
         end
 
         opts = Optimist.options do
-          opt :brokers, "destination broker IDs", type: :string
-          opt :topic,   "topic name to reassign", type: :string
+          opt :brokers, 'destination broker IDs', type: :string
+          opt :topic,   'topic name to reassign', type: :string
         end
 
         topic_name = opts[:topic]
-        topics = topic_name && zookeeper.get_topics([topic_name])
-        topics ||= zookeeper.get_topics
+        topics = topic_name && zookeeper.topics([topic_name])
+        topics ||= zookeeper.topics
 
-        destination_brokers = opts[:brokers] && opts[:brokers].split(',').map(&:to_i)
-        destination_brokers ||= zookeeper.get_brokers.values.map(&:id)
+        destination_brokers = opts[:brokers]&.split(',')&.map(&:to_i)
+        destination_brokers ||= zookeeper.brokers.values.map(&:id)
         destination_brokers.delete(source_broker)
 
-        active_brokers = zookeeper.get_brokers.values.map(&:id)
+        active_brokers = zookeeper.brokers.values.map(&:id)
 
         unless (inactive_brokers = destination_brokers - active_brokers).empty?
           print "ERROR: Broker #{inactive_brokers} are not currently active.\n"
@@ -53,39 +53,38 @@ module Kafkat
       end
 
       def generate_assignments(source_broker, topics, destination_brokers)
-
         assignments = []
         topics.each do |_, t|
           partitions_by_broker = build_partitions_by_broker(t, destination_brokers)
 
           t.partitions.each do |p|
-            if p.replicas.include? source_broker
-              replicas_size = p.replicas.length
-              replicas = p.replicas - [source_broker]
-              source_broker_is_leader = p.replicas.first == source_broker
-              potential_broker_ids = destination_brokers - replicas
-              if potential_broker_ids.empty?
-                print "ERROR: Not enough destination brokers to reassign topic \"#{t.name}\".\n"
-                exit 1
-              end
+            next unless p.replicas.include?(source_broker)
 
-              num_partitions_on_potential_broker =
-                partitions_by_broker.select { |id, _| potential_broker_ids.include? id }
-              assigned_broker_id = num_partitions_on_potential_broker.min_by{ |id, num| num }[0]
-              if source_broker_is_leader
-                replicas.unshift(assigned_broker_id)
-              else
-                replicas << assigned_broker_id
-              end
-              partitions_by_broker[assigned_broker_id] += 1
-
-              if replicas.length != replicas_size
-                STDERR.print "ERROR: Number of replicas changes after reassignment topic: #{t.name}, partition: #{p.id} \n"
-                exit 1
-              end
-
-              assignments << Assignment.new(t.name, p.id, replicas)
+            replicas_size = p.replicas.length
+            replicas = p.replicas - [source_broker]
+            source_broker_is_leader = p.replicas.first == source_broker
+            potential_broker_ids = destination_brokers - replicas
+            if potential_broker_ids.empty?
+              print "ERROR: Not enough destination brokers to reassign topic \"#{t.name}\".\n"
+              exit 1
             end
+
+            num_partitions_on_potential_broker =
+              partitions_by_broker.select { |id, _| potential_broker_ids.include?(id) }
+            assigned_broker_id = num_partitions_on_potential_broker.min_by { |_, num| num }[0]
+            if source_broker_is_leader
+              replicas.unshift(assigned_broker_id)
+            else
+              replicas << assigned_broker_id
+            end
+            partitions_by_broker[assigned_broker_id] += 1
+
+            if replicas.length != replicas_size
+              STDERR.print "ERROR: Number of replicas changes after reassignment topic: #{t.name}, partition: #{p.id} \n"
+              exit 1
+            end
+
+            assignments << Assignment.new(t.name, p.id, replicas)
           end
         end
 

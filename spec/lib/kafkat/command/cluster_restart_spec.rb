@@ -20,7 +20,7 @@ module Kafkat
 
         describe '#allBrokersRestarted?' do
           context 'when some brokers have not been restarted' do
-            let (:session) {
+            let(:session) {
               Session.new('broker_states' => {'1' => Session::STATE_NOT_RESTARTED, '2' => Session::STATE_RESTARTED})
             }
 
@@ -30,7 +30,7 @@ module Kafkat
           end
 
           context 'when all brokers have been restarted' do
-            let (:session) {
+            let(:session) {
               Session.new('broker_states' => {'1' => Session::STATE_RESTARTED, '2' => Session::STATE_RESTARTED})
             }
 
@@ -41,7 +41,7 @@ module Kafkat
         end
 
         describe '#update_states!' do
-          let (:session) {
+          let(:session) {
             Session.new('broker_states' => {'1' => Session::STATE_NOT_RESTARTED, '2' => Session::STATE_RESTARTED})
           }
 
@@ -66,7 +66,7 @@ module Kafkat
         let(:p1) { Partition.new('topic1', 'p1', ['1', '2', '3'], '1', 1) }
         let(:p2) { Partition.new('topic1', 'p2', ['1', '2', '3'], '2', 1) }
         let(:p3) { Partition.new('topic1', 'p3', ['2', '3', '4'], '3', 1) }
-        let (:topics) {
+        let(:topics) {
           {
               'topic1' => Topic.new('topic1', [p1, p2, p3])
           }
@@ -81,9 +81,9 @@ module Kafkat
           let(:next_command) { Subcommands::Next.new({}) }
 
           it 'execute next with 4 brokers and 3 partitions' do
-            allow(zookeeper).to receive(:get_broker_ids).and_return(broker_ids)
+            allow(zookeeper).to receive(:broker_ids).and_return(broker_ids)
             allow(zookeeper).to receive(:get_broker).and_return(broker_4)
-            allow(zookeeper).to receive(:get_topics).and_return(topics)
+            allow(zookeeper).to receive(:topics).and_return(topics)
             allow(Session).to receive(:exists?).and_return(true)
             allow(Session).to receive(:load!).and_return(session)
             allow(session).to receive(:save!)
@@ -121,7 +121,7 @@ module Kafkat
         let(:p1) { Partition.new('topic1', 'p1', ['1', '2', '3'], '1', 1) }
         let(:p2) { Partition.new('topic1', 'p2', ['1', '2', '3'], '2', 1) }
         let(:p3) { Partition.new('topic1', 'p3', ['2', '3', '4'], '3', 1) }
-        let (:topics) {
+        let(:topics) {
           {
               'topic1' => Topic.new('topic1', [p1, p2, p3])
           }

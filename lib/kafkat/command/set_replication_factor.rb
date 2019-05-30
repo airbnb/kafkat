@@ -1,7 +1,6 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
-
-    #
     # Command to set the replication factor (RF) of a topic.
     # The command accepts the topic name, the new desired replication factor,
     # and, in case of an increase of the replication factor, a list of broker ids.
@@ -23,30 +22,30 @@ module Kafkat
             'Set the replication factor of'
 
       def run
-        topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
+        topic_name = ARGV.shift unless ARGV[0]&.start_with?('--')
 
-        all_brokers = zookeeper.get_brokers
-        topics = topic_name && zookeeper.get_topics([topic_name])
-        topics ||= zookeeper.get_topics
+        all_brokers = zookeeper.brokers
+        topics = topic_name && zookeeper.topics([topic_name])
+        topics ||= zookeeper.topics
 
         opts = Optimist.options do
-          opt :brokers, "the comma-separated list of broker the new partitions must be assigned to", type: :string
-          opt :newrf, "the new replication factor", type: :integer, required: true
+          opt :brokers, 'the comma-separated list of broker the new partitions must be assigned to', type: :string
+          opt :newrf, 'the new replication factor', type: :integer, required: true
         end
 
-        broker_ids = opts[:brokers] && opts[:brokers].split(',').map(&:to_i)
+        broker_ids = opts[:brokers]&.split(',')&.map(&:to_i)
         new_rf = opts[:newrf]
 
         if new_rf < 1
-          puts "ERROR: replication factor is smaller than 1"
+          puts 'ERROR: replication factor is smaller than 1'
           exit 1
         end
 
-        broker_ids ||= zookeeper.get_brokers.values.map(&:id)
+        broker_ids ||= zookeeper.brokers.values.map(&:id)
 
         all_brokers_id = all_brokers.values.map(&:id)
         broker_ids.each do |id|
-          if !all_brokers_id.include?(id)
+          unless all_brokers_id.include?(id)
             puts "ERROR: Broker #{id} is not currently active.\n"
             exit 1
           end
@@ -71,14 +70,14 @@ module Kafkat
 
         # ****************
         if assignments.empty?
-          puts "No partition reassignment required"
+          puts 'No partition reassignment required'
         else
           print "This operation executes the following assignments:\n\n"
           print_assignment_header
           assignments.each { |a| print_assignment(a) }
           print "\n"
 
-          return unless agree("Proceed (y/n)?")
+          return unless agree('Proceed (y/n)?')
 
           result = nil
           begin
@@ -91,40 +90,36 @@ module Kafkat
         end
       end
 
-
       #
       # For every partition, remove the last replica from the replica list.
       # If the last replica is the leader, then the previous replica is removed instead.
       #
       def reduce_rf(topic, current_rf, new_rf)
         delta_rf = current_rf - new_rf
-        if current_rf == 1
-          raise 'Current replication factor if 1. Cannot reduce further.'
-        end
-        unless delta_rf > 0
-          raise "New replication factor (#{new_rf}) must be smaller than current replication factor (#{current_rf})"
-        end
+        raise 'Current replication factor if 1. Cannot reduce further.' if current_rf == 1
+
+        raise "New replication factor (#{new_rf}) must be smaller than current replication factor (#{current_rf})" unless delta_rf > 0
+
         assignments = []
         topic.partitions.map do |p|
           new_replicas = p.replicas
 
           (0...delta_rf).each do |_|
             (0...new_replicas.size).each do |i|
-              if new_replicas[new_replicas.size-1-i] != p.leader
-                new_replicas.delete_at(new_replicas.size-1-i)
+              index = new_replicas.size - 1 - i
+              if new_replicas[index] != p.leader
+                new_replicas.delete_at(index)
                 break
               end
             end
           end
 
-          if new_replicas.size != new_rf
-            raise 'Unexpected state'
-          end
+          raise 'Unexpected state' if new_replicas.size != new_rf
+
           assignments << Assignment.new(topic.name, p.id, new_replicas)
         end
         assignments
       end
-
 
       #
       # For every partition, filter out the brokers that already have a replica for this partition,
@@ -133,16 +128,14 @@ module Kafkat
       # The count of new replicas assigned to the brokers is maintained in order to uniformly assign new replicas.
       #
       def increase_rf(topic, current_rf, new_rf, brokers)
-        unless new_rf > current_rf
-          raise 'New replication factor must be greater than the current replication factor'
-        end
+        raise 'New replication factor must be greater than the current replication factor' unless new_rf > current_rf
 
         delta_rf = new_rf - current_rf
         if delta_rf > brokers.size
           raise "#{delta_rf} new replicas requested for topic #{p.topic_name} but only #{brokers.size} brokers available"
         end
 
-        broker_counts = brokers.map { |b| {:id => b, :count => 0} }
+        broker_counts = brokers.map { |b| { id: b, count: 0 } }
 
         assignments = []
         topic.partitions.map do |p|
@@ -151,6 +144,7 @@ module Kafkat
           if delta_rf > pick_from.size
             raise "Cannot create #{delta_rf} new replicas for partition #{p.topic_name}.#{p.id}, not enough brokers"
           end
+
           new_replicas = pick_from.sort { |a, b| a[:count] <=> b[:count] }[0...delta_rf]
           new_replicas.each { |b| b[:count] += 1 }
 
@@ -163,11 +157,11 @@ module Kafkat
 
       def warn_reduce_brokers
         return if @did_warn_reduce_brokers
-        puts "When reducing the replication factor the list of specified brokers is ignored."
-        puts "Once the replication factor is set, you can use the reassign command."
+
+        puts 'When reducing the replication factor the list of specified brokers is ignored.'
+        puts 'Once the replication factor is set, you can use the reassign command.'
         @did_warn_reduce_brokers = true
       end
-
     end
   end
 end

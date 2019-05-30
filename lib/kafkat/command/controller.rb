@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class Controller < Base
@@ -7,7 +8,7 @@ module Kafkat
             'Print the current controller.'
 
       def run
-        c = zookeeper.get_controller
+        c = zookeeper.controller
         print "The current controller is '#{c.id}' (#{c.host}:#{c.port}).\n"
       rescue Interface::Zookeeper::NotFoundError
         print "ERROR: Couldn't determine the current controller.\n"

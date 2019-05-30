@@ -1,4 +1,4 @@
-require 'thread'
+# frozen_string_literal: true
 require 'zk'
 
 module Kafkat
@@ -13,11 +13,11 @@ module Kafkat
         @zk_path = config.zk_path
       end
 
-      def get_broker_ids
+      def broker_ids
         zk.children(brokers_path)
       end
 
-      def get_brokers(ids=nil)
+      def brokers(ids = nil)
         brokers = {}
         ids ||= zk.children(brokers_path)
 
@@ -26,7 +26,9 @@ module Kafkat
           Thread.new do
             begin
               brokers[id] = get_broker(id)
-            rescue
+              # rescue
+              # Need to understand the conditions that we are trying to suppress, but for
+              # right now, lets just get rid of it and let it fail.
             end
           end
         end
@@ -39,21 +41,22 @@ module Kafkat
         path = broker_path(id)
         string = zk.get(path).first
         json = JSON.parse(string)
-        host, port = json['host'], json['port']
+        host = json['host']
+        port = json['port']
         Broker.new(id, host, port)
       rescue ZK::Exceptions::NoNode
         raise NotFoundError
       end
 
-      def get_topic_names()
-        return zk.children(topics_path)
+      def topic_names
+        zk.children(topics_path)
       end
 
-      def get_topics(names=nil)
+      def topics(names = nil)
         error_msgs = {}
         topics = {}
 
-        if names == nil
+        if names.nil?
           pool.with_connection do |cnx|
             names = cnx.children(topics_path)
           end
@@ -71,7 +74,7 @@ module Kafkat
         threads.map(&:join)
 
         unless error_msgs.empty?
-          STDERR.print "ERROR: zk cmds failed on get_topics: \n#{error_msgs.values.join("\n")}\n"
+          STDERR.print "ERROR: zk cmds failed on topics: \n#{error_msgs.values.join("\n")}\n"
           exit 1
         end
         topics
@@ -104,17 +107,15 @@ module Kafkat
         end
         threads.map(&:join)
 
-        until partition_queue.empty? do
-          partitions << partition_queue.pop
-        end
-
+        partitions << partition_queue.pop until partition_queue.empty?
         partitions.sort_by!(&:id)
+
         Topic.new(name, partitions)
       rescue ZK::Exceptions::NoNode
         raise NotFoundError
       end
 
-      def get_controller
+      def controller
         string = zk.get(controller_path).first
         controller_json = JSON.parse(string)
         controller_id = controller_json['brokerid']
@@ -131,15 +132,13 @@ module Kafkat
         partition_json['leader'] = broker_id
         new_string = JSON.dump(partition_json)
 
-        unless zk.set(path, new_string, version: stat.version)
-          raise ChangedDuringUpdateError
-        end
+        raise ChangedDuringUpdateError unless zk.set(path, new_string, version: stat.version)
       end
 
       private
 
       def pool
-        @pool ||= ZK.new_pool(zk_path, :min_clients => 10, :max_clients => 300, :timeout => 1)
+        @pool ||= ZK.new_pool(zk_path, min_clients: 10, max_clients: 300, timeout: 1)
       end
 
       def zk
@@ -171,7 +170,7 @@ module Kafkat
       end
 
       def controller_path
-        "/controller"
+        '/controller'
       end
     end
   end

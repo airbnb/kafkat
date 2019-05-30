@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class Reassign < Base
@@ -7,30 +8,30 @@ module Kafkat
             'Begin reassignment of partitions.'
 
       def run
-        topic_names = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
+        topic_names = ARGV.shift unless ARGV[0]&.start_with?('--')
 
-        all_brokers = zookeeper.get_brokers
+        all_brokers = zookeeper.brokers
 
         topics = nil
         if topic_names
-           topics_list = topic_names.split(',')
-           topics = zookeeper.get_topics(topics_list)
+          topics_list = topic_names.split(',')
+          topics = zookeeper.topics(topics_list)
         end
-        topics ||= zookeeper.get_topics
+        topics ||= zookeeper.topics
 
         opts = Optimist.options do
-          opt :brokers, "replica set (broker IDs)", type: :string
-          opt :replicas, "number of replicas (count)", type: :integer
+          opt :brokers, 'replica set (broker IDs)', type: :string
+          opt :replicas, 'number of replicas (count)', type: :integer
         end
 
-        broker_ids = opts[:brokers] && opts[:brokers].split(',').map(&:to_i)
+        broker_ids = opts[:brokers]&.split(',')&.map(&:to_i)
         replica_count = opts[:replicas]
 
-        broker_ids ||= zookeeper.get_brokers.values.map(&:id)
+        broker_ids ||= zookeeper.brokers.values.map(&:id)
 
         all_brokers_id = all_brokers.values.map(&:id)
         broker_ids.each do |id|
-          if !all_brokers_id.include?(id)
+          unless all_brokers_id.include?(id)
             print "ERROR: Broker #{id} is not currently active.\n"
             exit 1
           end
@@ -43,7 +44,8 @@ module Kafkat
 
         topics.each do |_, t|
           # This is how Kafka's AdminUtils determines these values.
-          partition_count = t.partitions.size
+          # Partition count is not used.  Commenting now, removing later
+          # partition_count = t.partitions.size
           topic_replica_count = replica_count || t.partitions[0].replicas.size
 
           if topic_replica_count > broker_count
@@ -60,7 +62,7 @@ module Kafkat
 
             replicas = [broker_ids[first_replica_index]]
 
-            (0...topic_replica_count-1).each do |i|
+            (0...topic_replica_count - 1).each do |i|
               shift = 1 + (replica_shift + i) % (broker_count - 1)
               index = (first_replica_index + shift) % broker_count
               replicas << broker_ids[index]

@@ -2,8 +2,8 @@ module Kafkat
   class Config
     CONFIG_PATHS = [
       '~/.kafkatcfg',
-      '/etc/kafkatcfg'
-    ]
+      '/etc/kafkatcfg',
+    ].freeze
 
     class NotFoundError < StandardError; end
     class ParseError < StandardError; end
@@ -28,8 +28,7 @@ module Kafkat
       raise e if e && string.nil?
 
       json = JSON.parse(string)
-      self.new(json)
-
+      new(json)
     rescue Errno::ENOENT
       raise NotFoundError
     rescue JSON::JSONError

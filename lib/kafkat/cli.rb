@@ -43,9 +43,10 @@ module Kafkat
       print "\nHere's a list of supported commands:\n\n"
       Command.all.values.sort_by(&:command_name).each do |klass|
         klass.usages.each do |usage|
-          format, description = usage[0], usage[1]
+          format = usage[0]
+          description = usage[1]
           padding_length = 68 - format.length
-          padding = " " * padding_length unless padding_length < 0
+          padding = ' ' * padding_length unless padding_length.negative?
           print "  #{format}#{padding}#{description}\n"
         end
       end

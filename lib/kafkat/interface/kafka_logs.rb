@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Interface
     class KafkaLogs
@@ -35,13 +36,14 @@ module Kafkat
       private
 
       def check_exists
-        raise NoLogsError unless File.exists?(log_path)
+        raise NoLogsError unless File.exist?(log_path)
       end
 
       def lock_for_write
         File.open(lockfile_path, File::CREAT) do |lockfile|
           locked = lockfile.flock(File::LOCK_EX | File::LOCK_NB)
           raise KafkaRunningError unless locked
+
           yield
         end
       end

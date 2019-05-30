@@ -1,4 +1,6 @@
+# frozen_string_literal: true
 require 'tempfile'
+require 'English'
 
 module Kafkat
   module Interface
@@ -20,17 +22,17 @@ module Kafkat
         partitions.each do |p|
           json_partitions << {
             'topic' => p.topic_name,
-            'partition' => p.id
+            'partition' => p.id,
           }
         end
 
-        json = {'partitions' => json_partitions}
+        json = { 'partitions' => json_partitions }
         file.write(JSON.dump(json))
         file.close
 
         run_tool(
           'kafka-preferred-replica-election',
-            '--path-to-json-file', file.path
+          '--path-to-json-file', file.path
         )
       ensure
         file.unlink
@@ -44,13 +46,13 @@ module Kafkat
           json_partitions << {
             'topic' => a.topic_name,
             'partition' => a.partition_id,
-            'replicas' => a.replicas
+            'replicas' => a.replicas,
           }
         end
 
         json = {
           'partitions' => json_partitions,
-          'version' => 1
+          'version' => 1,
         }
 
         file.write(JSON.dump(json))
@@ -58,22 +60,22 @@ module Kafkat
 
         run_tool(
           'kafka-reassign-partitions',
-            '--execute',
-            '--reassignment-json-file', file.path
+          '--execute',
+          '--reassignment-json-file', file.path
         )
       ensure
         file.unlink
       end
 
-      def shutdown!(broker_id, options={})
+      def shutdown!(broker_id, options = {})
         args = ['--broker', broker_id]
         args += ['--num.retries', options[:retries]] if options[:retries]
         args += ['--retry.interval.ms', option[:interval]] if options[:interval]
 
         run_tool(
           'kafka-run-class',
-            'kafka.admin.ShutdownBroker',
-            *args
+          'kafka.admin.ShutdownBroker',
+          *args
         )
       end
 
@@ -81,8 +83,9 @@ module Kafkat
         path = File.join(kafka_path, "bin/#{name}.sh")
         args += ['--zookeeper', "\"#{zk_path}\""]
         args_string = args.join(' ')
-        result = `#{path} #{args_string}`
-        raise ExecutionFailedError if $?.to_i > 0
+        result = %(#{path} #{args_string})
+        raise ExecutionFailedError if $CHILD_STATUS.to_i > 0
+
         result
       end
     end

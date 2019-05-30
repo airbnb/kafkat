@@ -20,7 +20,7 @@ if ENV['COVERAGE']
     require 'simplecov'
 end
 require 'kafkat'
-require 'factory_girl'
+require 'factory_bot'
 require 'rspec/collection_matchers'
 
 require_relative '../spec/factories/topic'
@@ -49,7 +49,7 @@ RSpec.configure do |config|
     mocks.verify_partial_doubles = true
   end
 
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.

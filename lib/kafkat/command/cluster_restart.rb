@@ -1,7 +1,6 @@
 module Kafkat
   module Command
     class ClusterRestart < Base
-
       register_as 'cluster-restart'
 
       usage 'cluster-restart help', 'Determine the server restart sequence for kafka'
@@ -24,7 +23,6 @@ end
 module Kafkat
   module ClusterRestart
     module Subcommands
-
       class Help < ::Kafkat::Command::Base
         def run
           puts 'cluster-restart help                Print Help and exit'
@@ -38,12 +36,11 @@ module Kafkat
       end
 
       class Start < ::Kafkat::Command::Base
-
         attr_reader :session
 
         def run
           if Session.exists?
-            puts "ERROR: A session is already started"
+            puts 'ERROR: A session is already started'
             puts "\n[Action] Please run 'next' or 'reset' commands"
             exit 1
           end
@@ -58,23 +55,19 @@ module Kafkat
       end
 
       class Reset < ::Kafkat::Command::Base
-
         def run
-          if Session.exists?
-            Session.reset!
-          end
-          puts "Session reset"
+          Session.reset! if Session.exists?
+          puts 'Session reset'
           puts "\n[Action] Please run 'start' to start the session"
         end
       end
 
       class Restore < ::Kafkat::Command::Base
-
         attr_reader :session
 
         def run
           if Session.exists?
-            puts "ERROR: A session is already started"
+            puts 'ERROR: A session is already started'
             puts "\n[Action] Please run 'next' or 'reset' commands"
             exit 1
           end
@@ -82,36 +75,35 @@ module Kafkat
           file_name = ARGV[0]
           @session = Session.load!(file_name)
           @session.save!
-          puts "Session restored"
+          puts 'Session restored'
           puts "\m[Action] Please run 'next' to select the broker with lowest restarting cost"
         end
       end
 
       class Next < ::Kafkat::Command::Base
-
         attr_reader :session, :topics
 
         def run
           unless Session.exists?
-            puts "ERROR: no session in progress"
+            puts 'ERROR: no session in progress'
             puts "\n[Action] Please run 'start' command"
             exit 1
           end
 
           @session = Session.load!
           if @session.all_restarted?
-            puts "All the brokers have been restarted"
+            puts 'All the brokers have been restarted'
           else
             pendings = @session.pending_brokers
             if pendings.size > 1
-              puts "ERROR Illegal state: multiple brokers are in Pending state"
+              puts 'ERROR Illegal state: multiple brokers are in Pending state'
               exit 1
             elsif pendings.size == 1
               next_broker = pendings[0]
               puts "Broker #{next_broker} is in Pending state"
             else
-              @topics = zookeeper.get_topics
-              next_broker, cost = ClusterRestartHelper.select_broker_with_min_cost(session, topics)
+              @topics = zookeeper.topics
+              next_broker, = ClusterRestartHelper.select_broker_with_min_cost(session, topics)
               @session.update_states!(Session::STATE_PENDING, [next_broker])
               @session.save!
               puts "The next broker is: #{next_broker}"
@@ -123,12 +115,11 @@ module Kafkat
       end
 
       class Log < ::Kafkat::Command::Base
-
         attr_reader :session
 
         def run
           unless Session.exists?
-            puts "ERROR: no session in progress"
+            puts 'ERROR: no session in progress'
             puts "\n[Action] Please run 'start' command"
             exit 1
           end
@@ -139,19 +130,18 @@ module Kafkat
       end
 
       class Good < ::Kafkat::Command::Base
-
         attr_reader :session
 
         def run
           unless Session.exists?
-            puts "ERROR: no session in progress"
+            puts 'ERROR: no session in progress'
             puts "\n[Action] Please run 'start' command"
             exit 1
           end
 
           broker_id = ARGV[0]
           if broker_id.nil?
-            puts "ERROR You must specify a broker id"
+            puts 'ERROR You must specify a broker id'
             exit 1
           end
           restart(broker_id)
@@ -170,27 +160,24 @@ module Kafkat
               exit 1
             end
           rescue UnknownBrokerError => e
-            puts "ERROR #{e.to_s}"
+            puts "ERROR #{e}"
             exit 1
           end
         end
       end
     end
 
-    class UnknownBrokerError < StandardError;
-    end
-    class UnknownStateError < StandardError;
-    end
+    class UnknownBrokerError < StandardError; end
+    class UnknownStateError < StandardError; end
 
     class ClusterRestartHelper
-
       def self.select_broker_with_min_cost(session, topics)
         broker_to_partition = get_broker_to_leader_partition_mapping(topics)
         broker_restart_cost = Hash.new(0)
         session.broker_states.each do |broker_id, state|
           if state == Session::STATE_NOT_RESTARTED
             current_cost = calculate_cost(broker_id, broker_to_partition[broker_id], session)
-            broker_restart_cost[broker_id] = current_cost if current_cost != nil
+            broker_restart_cost[broker_id] = current_cost unless current_cost.nil?
           end
         end
 
@@ -201,8 +188,7 @@ module Kafkat
       def self.get_broker_to_leader_partition_mapping(topics)
         broker_to_partitions = Hash.new { |h, key| h[key] = [] }
 
-        topics.values.flat_map { |topic| topic.partitions }
-            .each do |partition|
+        topics.values.flat_map(&:partitions).each do |partition|
           broker_to_partitions[partition.leader] << partition
         end
         broker_to_partitions
@@ -210,8 +196,9 @@ module Kafkat
 
       def self.calculate_cost(broker_id, partitions, session)
         raise UnknownBrokerError, "Unknown broker #{broker_id}" unless session.broker_states.key?(broker_id)
+
         partitions.find_all { |partition| partition.leader == broker_id }
-            .reduce(0) do |cost, partition|
+                  .reduce(0) do |cost, partition|
           cost += partition.replicas.length
           cost -= partition.replicas.find_all { |replica| session.restarted?(replica) }.size
           cost
@@ -219,19 +206,15 @@ module Kafkat
       end
     end
 
-
     class Session
+      SESSION_PATH = '~/kafkat_cluster_restart_session.json'.freeze
+      STATE_RESTARTED = 'restarted'.freeze # use String instead of Symbol to facilitate JSON ser/deser
+      STATE_NOT_RESTARTED = 'not_restarted'.freeze
+      STATE_PENDING = 'pending'.freeze
+      STATES = [STATE_NOT_RESTARTED, STATE_RESTARTED, STATE_PENDING].freeze
 
-      SESSION_PATH = '~/kafkat_cluster_restart_session.json'
-      STATE_RESTARTED = 'restarted' # use String instead of Symbol to facilitate JSON ser/deser
-      STATE_NOT_RESTARTED = 'not_restarted'
-      STATE_PENDING = 'pending'
-      STATES= [STATE_NOT_RESTARTED, STATE_RESTARTED, STATE_PENDING]
-
-      class NotFoundError < StandardError;
-      end
-      class ParseError < StandardError;
-      end
+      class NotFoundError < StandardError; end
+      class ParseError < StandardError; end
 
       attr_reader :broker_states
 
@@ -244,8 +227,7 @@ module Kafkat
         string = File.read(path)
 
         json = JSON.parse(string)
-        self.new(json)
-
+        new(json)
       rescue Errno::ENOENT
         raise NotFoundError
       rescue JSON::JSONError
@@ -258,7 +240,7 @@ module Kafkat
       end
 
       def self.from_zookeepers(zookeeper)
-        broker_ids = zookeeper.get_broker_ids
+        broker_ids = zookeeper.broker_ids
         Session.from_brokers(broker_ids)
       end
 
@@ -273,34 +255,31 @@ module Kafkat
 
       def save!(session_file = SESSION_PATH)
         File.open(File.expand_path(session_file), 'w') do |f|
-          f.puts JSON.pretty_generate(self.to_h)
+          f.puts JSON.pretty_generate(to_h)
         end
       end
 
       def update_states!(state, ids)
         state = state.to_s if state.is_a?(Symbol)
-        unless STATES.include?(state)
-          raise UnknownStateError, "Unknown State #{state}"
-        end
+        raise UnknownStateError, "Unknown State #{state}" unless STATES.include?(state)
 
         intersection = ids & broker_states.keys
-        unless intersection == ids
-          raise UnknownBrokerError, "Unknown brokers: #{(ids - intersection).join(', ')}"
-        end
+        raise UnknownBrokerError, "Unknown brokers: #{(ids - intersection).join(', ')}" unless intersection == ids
 
         ids.each { |id| broker_states[id] = state }
         self
       end
 
-
       def state(broker_id)
         raise UnknownBrokerError, "Unknown broker: #{broker_id}" unless @broker_states.key?(broker_id)
+
         broker_states[broker_id]
       end
 
       def state?(broker_id, state)
         raise UnknownBrokerError, "Unknown broker: #{broker_id}" unless @broker_states.key?(broker_id)
         raise UnknownStateError, "Unknown state: #{state}" unless STATES.include?(state)
+
         @broker_states[broker_id] == state
       end
 
@@ -327,9 +306,7 @@ module Kafkat
       end
 
       def to_h
-        {
-            :broker_states => broker_states,
-        }
+        { broker_states: broker_states }
       end
     end
   end

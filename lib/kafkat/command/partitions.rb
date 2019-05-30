@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class Describe < Base
@@ -11,19 +12,19 @@ module Kafkat
             'Print partitions by topic (only unavailable).'
 
       def run
-        topic_name = ARGV.shift unless ARGV[0] && ARGV[0].start_with?('--')
+        topic_name = ARGV.shift unless ARGV[0]&.start_with?('--')
         topic_names = topic_name && [topic_name]
 
         @options = Optimist.options do
-          opt :under_replicated, "only under-replicated"
-          opt :unavailable, "only unavailable"
+          opt :under_replicated, 'only under-replicated'
+          opt :unavailable, 'only unavailable'
         end
 
-        brokers = zookeeper.get_brokers
-        topics = zookeeper.get_topics(topic_names)
+        brokers = zookeeper.brokers
+        topics = zookeeper.topics(topic_names)
 
         print_partition_header
-        topics.each do |name, t|
+        topics.each do |_, t|
           t.partitions.each do |p|
             print_partition(p) if selected?(p, brokers)
           end

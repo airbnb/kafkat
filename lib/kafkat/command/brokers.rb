@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Kafkat
   module Command
     class Brokers < Base
@@ -7,9 +8,9 @@ module Kafkat
             'Print available brokers from Zookeeper.'
 
       def run
-        bs = zookeeper.get_brokers
+        bs = zookeeper.brokers
         print_broker_header
-        bs.each { |id, b| print_broker(b) }
+        bs.each { |_, b| print_broker(b) }
       end
     end
   end

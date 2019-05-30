@@ -1,4 +1,3 @@
 module Kafkat
-  class Topic < Struct.new(:name, :partitions)
-  end
+  Topic = Struct.new(:name, :partitions)
 end

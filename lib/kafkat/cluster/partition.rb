@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kafkat
   Partition = Struct.new(:topic_name, :id, :replicas, :leader, :isr) do
     def has_leader?(brokers)

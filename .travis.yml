@@ -3,8 +3,8 @@ cache: bundler
 sudo: false
 script:
   - bundle exec rake
+  - bundle exec rubocop
 rvm:
-- 1.9.3
-- 2.0.0
-- 2.1.6
-- 2.2.2
+- 2.4.5
+- 2.5.3
+- 2.6.1

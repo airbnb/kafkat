@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'zk'
 require 'json'
 require 'optimist'

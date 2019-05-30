@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kafkat
   module Command
     class NotFoundError < StandardError; end

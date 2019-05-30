@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kafkat
   class Config
     CONFIG_PATHS = [
@@ -17,12 +19,9 @@ module Kafkat
       e = nil
 
       CONFIG_PATHS.each do |rel_path|
-        begin
-          path = File.expand_path(rel_path)
-          string = File.read(path)
-          break
-        rescue => e
-        end
+        path = File.expand_path(rel_path)
+        string = File.read(path)
+        break
       end
 
       raise e if e && string.nil?

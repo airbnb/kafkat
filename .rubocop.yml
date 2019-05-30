@@ -1,6 +1,8 @@
 AllCops:
   Exclude:
   - spec/**/*
+  - vendor/**/*
+  - '*.gemspec'
   DisabledByDefault: true
   StyleGuideBaseURL: https://ctx.sh/ruby-style-guide/
 
@@ -275,6 +277,7 @@ Style/MethodCallWithArgsParentheses:
   - printf
   Exclude:
   - Gemfile
+  - Rakefile
 
 Style/MethodDefParentheses:
   EnforcedStyle: require_parentheses

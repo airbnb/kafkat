@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kafkat
   module Formatting
     def justify(field, width = 2)

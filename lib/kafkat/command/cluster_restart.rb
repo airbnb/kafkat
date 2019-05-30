@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kafkat
   module Command
     class ClusterRestart < Base
@@ -198,7 +200,7 @@ module Kafkat
         raise UnknownBrokerError, "Unknown broker #{broker_id}" unless session.broker_states.key?(broker_id)
 
         partitions.find_all { |partition| partition.leader == broker_id }
-                  .reduce(0) do |cost, partition|
+          .reduce(0) do |cost, partition|
           cost += partition.replicas.length
           cost -= partition.replicas.find_all { |replica| session.restarted?(replica) }.size
           cost
@@ -207,11 +209,11 @@ module Kafkat
     end
 
     class Session
-      SESSION_PATH = '~/kafkat_cluster_restart_session.json'.freeze
-      STATE_RESTARTED = 'restarted'.freeze # use String instead of Symbol to facilitate JSON ser/deser
-      STATE_NOT_RESTARTED = 'not_restarted'.freeze
-      STATE_PENDING = 'pending'.freeze
-      STATES = [STATE_NOT_RESTARTED, STATE_RESTARTED, STATE_PENDING].freeze
+      SESSION_PATH = '~/kafkat_cluster_restart_session.json'
+      STATE_RESTARTED = 'restarted' # use String instead of Symbol to facilitate JSON ser/deser
+      STATE_NOT_RESTARTED = 'not_restarted'
+      STATE_PENDING = 'pending'
+      STATES = [STATE_NOT_RESTARTED, STATE_RESTARTED, STATE_PENDING]
 
       class NotFoundError < StandardError; end
       class ParseError < StandardError; end

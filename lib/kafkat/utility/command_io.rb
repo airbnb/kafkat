@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kafkat
   module CommandIO
     def prompt_and_execute_assignments(assignments)

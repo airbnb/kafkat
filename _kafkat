@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # Run kafkat from source, specifically for testing stuff without doing a rake install.
 

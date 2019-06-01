@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/airbnb/kafkat.png?branch=master)](https://travis-ci.org/airbnb/kafkat)
+[![Build Status](https://travis-ci.org/ctxswitch/kafkat.png?branch=master)](https://travis-ci.org/ctxswitch/kafkat)
+[![Coverage Status](https://coveralls.io/repos/github/ctxswitch/kafkat/badge.svg?branch=master)](https://coveralls.io/github/ctxswitch/kafkat?branch=master)
 
 kafkat
 ======

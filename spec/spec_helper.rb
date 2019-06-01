@@ -16,9 +16,16 @@
 # users commonly want.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
-if ENV['COVERAGE']
-    require 'simplecov'
+if ENV['TRAVIS']
+  require 'coveralls'
+  Coveralls.wear!
+elsif ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.start do
+    ['spec', 'vendor', 'bin'].each{ |f| add_filter f }
+  end
 end
+
 require 'kafkat'
 require 'factory_bot'
 require 'rspec/collection_matchers'

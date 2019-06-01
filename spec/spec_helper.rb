@@ -22,7 +22,7 @@ if ENV['TRAVIS']
 elsif ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start do
-    ['spec', 'vendor', 'bin'].each{ |f| add_filter f }
+    ['spec', 'vendor', 'bin'].each { |f| add_filter f }
   end
 end
 
